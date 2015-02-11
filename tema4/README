@@ -1,0 +1,40 @@
+Tema 4 APD
+
+Autor: Datcu Andrei Daniel
+Grupa: 331CC
+
+Cerinta: Simularea unei retele in MPI
+
+Fisiere continute de implementare:
+
+matrix.h - fisierul care implementeaza clasa matrix (vezi comentarii fisier)
+message.h - fisierul care implementeaza clasa message (vezi comentarii fisier)
+main.cpp - fisierul care implementeaza comportamenul celor trei etape
+    descrise in enunt.
+
+Descrierea implementarii:
+
+Fiecare proces isi citeste propria linie din fisierul de intrare.
+
+Apoi toti comunica pentru a stabili un arbore de acoperire, conform lab 10,
+putin modificat insa: NU mai exista ecouri goale, ci la fiecare sondaj la care
+eu stiu ca nu voi avea de ce sa raspund nu raspund. Idom si cel care a trimis
+sondajul nu va trebui sa raspunda la sondarea mea (daca ii eram parinte nu mai
+m-ar fi sondat) si deci si el ignora. Astfel, scadem numarul mesajelor la jumatate.
+
+
+Dupa stabilirea topologiei arbore fiecare proces isi calculeaza tabela de rutare
+folosind o parcugere bf.
+
+Pentru schimbul de mesaje am creat clasa Message (Vezi comentariile din message.h)
+Fiecare proces isi citeste mesajele din fisier, initiaza comunicarea cu mesajul
+de broadcast, trimite mesajele si incheie comunicarea cu mesajul de broadcast de
+final(conform enuntului). Toate mesajele sunt trimise in mod ASINCRON.
+Apoi fiecare proces va juca rolul ruterului. Va tipari mesajele care ii sunt adresate
+sau le va ruta pe celelalte.
+
+Urmeaza etapa 3, in care fiecare proces voteaza 2 procese random. Apoi coloecteaza
+rezultatele sub forma de vector de la fii lor (un vector de nproc elemente
+voturi[i] - cate voturi a primit pana acum procesul i). Adauga cele 2 voturi ale sale
+si trimite rezultatele la parinte. Apoi asteapta broadcastul cu rezultatele finale
+dupa care le tipareste

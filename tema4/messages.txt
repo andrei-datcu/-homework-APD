@@ -1,0 +1,6 @@
+4
+6 1 Mesaj trimis
+4 3 Buna ziua!
+5 6 Alt mesaj
+3 B Mesaj de broadcast
+4 2 Salut…

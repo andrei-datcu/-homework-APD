@@ -1,0 +1,75 @@
+Nume: Datcu Andrei Daniel
+Grupa 331CC
+
+Compilator folosit: g++ (Ubuntu/Linaro 4.7.2-2ubuntu1) 4.7.2
+
+Sistemul pe care am testat:
+    Intel i7 2600k 4x2 threaduri
+    Linux Min 14 64 Bit KDE
+    Kernel Linux version 3.5.0-17-generic (buildd@allspice) (gcc version 4.7.2 (Ubuntu/Linaro 4.7.2-2ubuntu1) ) #28-Ubuntu SMP Tue Oct 9 19:31:23 UTC 2012 (Ubuntu 3.5.0-17.28-generic 3.5.5)
+
+Pentru compilare: make all
+
+Dimensiune test:
+   N = 100 si 100 de saptamani:
+
+Timpi obtinuti
+
+Varianta|   Serial   | 2 Threaduri | 4 Threaduri | 8 Threaduri | Schedule | SpeedUp
+--------|------------|-------------|-------------|-------------|----------|--------
+Optim   |   2.20s    |    1.43s    |   1.01s     | 1.32s       | dynamic  | 1.53
+--------|------------|-------------|-------------|-------------|----------|--------
+Neoptim |  34.03s    |   19.37s    |   10.50s    | 9.435s      | dynamic  | 1.75
+
+
+Observatii:
+    Indiferent de tipul de schedule si de chunksize ales, rezultatele
+    au fost asemanatoare, cu un mic plus pentru dynamic. Acest lucru
+    se intampla deoarece testele nu sunt balansate, unii senatori
+    gansindu-si toate culorile relativ aproape de ei, iar altii foarte
+    departe(in cazul variantei neoptime)
+
+    Varianta neoptima seriala va rula mai repede decat varianta neoptima paralela nu doar din cauza overheadului (vezi detalii de implementare)
+
+    Se observa ca varianta neoptima scaleaza mult mai bine (mai ales pe 4 Threaduri) decat cea optima. Acest lucru se intampla deoarece
+    varianta optima este paralelizata pe culori (fiecare thread calculeaza pentru o anumite culori distantele minime de la toti senatorii la un senator de acea culoare)
+    iar cea neoptima este paralelizata pe senator (un thread calculeaza toate distantele pentru un senator). Deoarece dupa un numar mare de saptamani numarul culorilor
+    va fi prea mic, varianta paralela optima nu isi va mai avea ATUNCI sensul.
+
+    O optimizare posibila ar fi paralelizarea variantei optime dupa nivelul cozii bf(vezi detalii de implementare), insa asta ar necesita un efort important din partea programatorului.
+
+
+Detalii de implementare:
+
+    Varianta neoptima:(serialneoptim.cpp si paralelneoptim.cpp)
+
+        pentru fiecare senator merg in patrate cu latura din ce in ce mai mare in jurul sau pana cand gasesc vecini de toate culorile, sau pana nu mai are sens sa maresc patratul
+        (in cazul in care eu sunt singurul de culoarea mea pe matrice).
+        Tin minte culorile gasite de un senator intr-un bitset in colorFound. Toate culorile le updatez pe o alta matrice (Temp) pe care la sfarsit o copiez peste matircea initiala
+        Totodata, tin minte ce culori fac parte din matricea noua, pentru a ma ajuta sa ma opresc mai repede la cautarea urmatoare (stiind cate culori am de gasit stiu cand le-am gasit pe toate)
+
+        in varianta seriala am reusit sa aduc unele optimizari declarand vectorul de distante static (Acest lucru nu se poate face si in varianta paralela din motive evidente)
+
+        Practic, aceasta este ideea din enuntul temei, pentru varianta optima, insa nu vad cum ar putea sa intre in 15 secunde (Cat ati spus pe forum ca dureaza implementarea voastra)
+
+        Timp de executie pentru o saptamana: O(n^4)
+
+
+    Varianta optima: (serialoptim.cpp si paraleloptim.cpp)
+
+        deoarece la varianta neoptima parcurgeam de multe ori acelasi drum, pentru a raspunde la intrebari diferite, observam ca am putea sa abordam problema total invers.
+        Si anume: in loc ca fiecare senator sa-si caute culorile cele mai apropriate, putem ca fiecare senator sa-si anunte apropriatii (vecin de distanta 1, 2 etc) ca el este cel mai
+        apropriat pentru o anumita culoare. Asadar, fiecare senator isi poate delimita o zona de influenta, in care el este cel mai apropriat senator de culoarea sa pentru toti senatorii
+        din zona sa. Daca am considera matricea ca fiind un graf , cu fiecare nod avand 8 vecini (sus, jos, stanga, dreapta si diagonale) determinarea zonelor ar putea fi facuta cu o
+        simpla parcurgere BF. Cazul special este determinarea celui mai apropriat senator de aceeasi culoare cu senatorul curent. Acest lucru este rezolvat la intalnirea zonelor de influenta.
+        Cand se intalnesc doua zone de influenta, eu stiu de unde au plecat (matricea father) verific ca sunt intr-adevar diferite si atunci stiu ca tatii lor se afla la
+         d = raza_zona_1 + raza_zona_2 + 1. Acest d ar putea fi distanta minima pentru unul dintre cei doi tati, pentru ambii sau pentru niciunul, sau ar putea fi distanta minima + 1.
+
+         Timp de executie pentru o saptamana : O(n ^ 3)
+
+         S-ar putea paraleliza nu doar extinderea pentru fiecare culoare, ci extinderea cu o unitate a fiecarei zone(nivelul cozii bf). Acest lucru ar duce la un speedup mai bun.
+
+         Pentru a respecta cerinta temei si a obtine un plus de viteza, pe langa calculul zonelor, am paralelizat si calculul noilor culori dupa fiecare senator
+
+NOTA:
+    intrucat sursele (paralel - serial) sunt foarte asemanatoare, comentarii se vor gasi doar in sursele seriale

@@ -1,0 +1,35 @@
+Tema 3 APD
+
+Autor: Datcu Andrei Daniel
+Grupa: 331CC
+
+Cerinta: Calculul parelilizat al unei multimi tip Mandelbrot/Julia
+
+Fisiere continute de implementare:
+
+matrix.h - fisierul care implementeaza clasa matrix (vezi comentarii fisier)
+main.cpp - fisierul care implementeaza comportamenul celor doua tipuri de 
+    procese descrise in enunt.
+
+Descrierea implementarii:
+
+Cele doua tipuri de calcule (Mandelbrot si Julia) se fac conform descrierii in enunt
+in cele doua functii din main.cpp : calc_mandelbrot respectiv calc_julia. Pentru parametrii
+acestora de intrare vezi comentariile din main.cpp
+
+Paralelizarea se face la nivel de linii: Fiecare proces va primi de calculat un numar de
+linechunk linii, unde:
+
+    linechunk = nr_linii_imagine_finala / nr_procese
+
+Ultimul proces insa poate primi un numar diferit de linechunk linii (mai mic sau mai mare):
+
+    last_linechunk = nr_linii_imagine_finala - (nr_procese - 1) * linechunk;
+
+    Astfel, se acopera toata matricea.
+
+    Conform enuntului, masterul citeste datele din fisier si le trimite si celorlalte procese
+
+    Apoi, toate procesele, inclusiv masterul, isi calculeaza propria imagine locala, pe care o trimit
+    apoi masterului. Acesta le copiaza pe toate in locul corespunzator in imaginea finala, dupa care
+    o salveaza pe aceasta intr-un fisier .pgm conform enuntului.
